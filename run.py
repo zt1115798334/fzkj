@@ -17,7 +17,7 @@ ClassTimePatterns = [96, 122, 168, 194, 228]
 WeekDayPatterns = ['OnMonday', 'OnTuesday', 'OnWednesday', 'OnThursday', 'OnFriday', 'OnSaturday', 'OnSunday']
 
 
-def parse(cookies):
+def parse(cookies, student_id):
     for i, semId in enumerate(SemIdPatterns):
         semester = SemesterPatterns[i]
         logging.info(f'开始爬取{semester}学期的课程表')
@@ -40,7 +40,7 @@ def parse(cookies):
                         class_times = index + 1
                 curriculum = course['LUName'] + course['Remark']
                 yield {
-                    'student_id': '175041108',
+                    'student_id': student_id,
                     'semester': semester,
                     'weekly_times': weekly_times,
                     'week': week,
@@ -54,14 +54,12 @@ def main():
     db = pymysql.connect(host='127.0.0.1', user='root', password='Root@2018', port=3306, db='free_school')
     cursor = db.cursor()
     sql = "SELECT student_id,student_pwd FROM t_school_administration WHERE fresh_state = 0 and school_code = 2 and usable_state = 0 GROUP BY student_id,student_pwd"
-    # sql = "SELECT student_id,student_pwd FROM t_school_administration WHERE id = 14"
     cursor.execute(sql)
     results = cursor.fetchall()
     for row in results:
-        # print(row)
         cookies = selenium_login(row[0], row[1])
         logging.info(f'开始爬取学号为{row[0]}的课程表')
-        for res in parse(cookies):
+        for res in parse(cookies, row[0]):
             MySQLPipeLine.save_to_mysql(res)
         logging.info(f'学号为{row[0]}的课程表爬取完毕')
         cursor.execute("UPDATE t_school_administration SET fresh_state = 1 WHERE student_id = '%s'" % (row[0]))
