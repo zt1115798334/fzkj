@@ -1,6 +1,13 @@
+import logging
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s: %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 
 def selenium_login(username, password):
@@ -17,8 +24,13 @@ def selenium_login(username, password):
     driver.find_element_by_id("password").send_keys(password)
     driver.find_element_by_xpath('//*[@id="casLoginForm"]/p[5]/button').click()
     time.sleep(5)
-    driver.find_element_by_xpath(
-        '//*[@id="ampTabContentItem0"]/div[1]/pc-card-html-4764378802414004-01/amp-w-frame/div/div[2]/div[1]/div/div/div/div/div/div/div[2]/div/widget-app-item[4]/div/div').click()
+    try:
+        driver.find_element_by_xpath(
+            '//*[@id="ampTabContentItem0"]/div[1]/pc-card-html-4764378802414004-01/amp-w-frame/div/div[2]/div[1]/div/div/div/div/div/div/div[2]/div/widget-app-item[4]/div/div').click()
+    except:
+        # 登陆失败关闭driver
+        driver.quit()
+        return False
     time.sleep(2)
     n = driver.window_handles
     driver.switch_to.window(n[1])

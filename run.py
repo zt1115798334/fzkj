@@ -50,14 +50,19 @@ def parse(cookies, student_id):
 
 
 def main():
-    db = pymysql.connect(host='152.136.145.193', user='root', password='School@2018', port=3306, db='free_school')
-    # db = pymysql.connect(host='127.0.0.1', user='root', password='Root@2018', port=3306, db='free_school')
+    # db = pymysql.connect(host='152.136.145.193', user='root', password='School@2018', port=3306, db='free_school')
+    db = pymysql.connect(host='127.0.0.1', user='root', password='Root@2018', port=3306, db='free_school')
     cursor = db.cursor()
     sql = "SELECT student_id,student_pwd FROM t_school_administration WHERE fresh_state = 0 and abnormal_state = 0 and school_code = 2 and usable_state = 0 GROUP BY student_id,student_pwd"
     cursor.execute(sql)
     results = cursor.fetchall()
     for row in results:
         cookies = selenium_login(row[0], row[1])
+        if cookies is False:
+            logging.error(f'防灾科技学院学号为{row[0]}的帐号登录失败')
+            cursor.execute("UPDATE t_school_administration SET abnormal_state = 1 WHERE student_id = '%s'" % (row[0]))
+            db.commit()
+            continue
         logging.info(f'开始爬取学号为{row[0]}的课程表')
         for res in parse(cookies, row[0]):
             MySQLPipeLine.save_to_mysql(res)
