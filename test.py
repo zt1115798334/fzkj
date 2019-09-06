@@ -2,7 +2,7 @@ from fzkj_login import selenium_login
 
 
 def main():
-    cookies = selenium_login("175015218", "19980508")
+    cookies = selenium_login("19013122", "Wy17637987113.")
     print(cookies)
 
 

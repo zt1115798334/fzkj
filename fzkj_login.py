@@ -34,7 +34,12 @@ def selenium_login(username, password):
     time.sleep(2)
     n = driver.window_handles
     driver.switch_to.window(n[1])
-    driver.switch_to.frame('divFrame1')
+    try:
+        driver.switch_to.frame('divFrame1')
+    except:
+        # 登陆失败关闭driver
+        driver.quit()
+        return False
     driver.find_element_by_xpath('//*[@id="divSubMenuList"]/div[5]/div[3]/a/dl').click()
     cookies = driver.get_cookies()
     cookies_dict = {}
